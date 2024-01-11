@@ -1,71 +1,93 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <stack>
+#include <queue>
+
 using namespace std;
 
-class Graph {
+class Graph
+{
 private:
     int vertices;
-    vector<vector<char>> adjacencyListDFS;
-    vector<unordered_map<char, int>> adjacencyListBFS;
+    unordered_map<char, vector<char>> adjacencyListDFS;
+    unordered_map<char, unordered_map<char, int>> adjacencyListBFS;
 
 public:
-    Graph(int v) : vertices(v), adjacencyListDFS(v), adjacencyListBFS(v) {}
+    Graph(int v) : vertices(v) {}
 
-    void addEdgeDFS(char src, char dest) {
-        adjacencyListDFS[src - 'A'].push_back(dest);
+    void addEdgeDFS(char src, char dest)
+    {
+        adjacencyListDFS[src].push_back(dest);
     }
 
-    void addEdgeBFS(char src, char dest, int weight) {
-        adjacencyListBFS[src - 'A'][dest] = weight;
-        adjacencyListBFS[dest - 'A'][src] = weight;  // Assuming an undirected graph
+    void addEdgeBFS(char src, char dest, int weight)
+    {
+        adjacencyListBFS[src][dest] = weight;
+        adjacencyListBFS[dest][src] = weight; // Assuming an undirected graph
     }
 
-    void DFS(char src, char dest, vector<bool>& visited, stack<char>& pathStack) {
-        visited[src - 'A'] = true;
+    void DFS(char src, char dest, unordered_map<char, bool> &visited, stack<char> &pathStack)
+    {
+        visited[src] = true;
         pathStack.push(src);
 
-        if (src == dest) {
+        if (src == dest)
+        {
             // Print the path
             vector<char> path;
             stack<char> tempStack = pathStack;
-            while (!tempStack.empty()) {
+            while (!tempStack.empty())
+            {
                 path.push_back(tempStack.top());
                 tempStack.pop();
             }
 
-            for(int i=path.size()-1; i >= 0; i--) {
-                cout<<path[i]<<" ";
+            for (int i = path.size() - 1; i >= 0; i--)
+            {
+                cout << path[i] << " ";
             }
             cout << endl;
-        } else {
-            for (char neighbor : adjacencyListDFS[src - 'A']) {
-                if (!visited[neighbor - 'A']) {
+        }
+        else
+        {
+            for (char neighbor : adjacencyListDFS[src])
+            {
+                if (!visited[neighbor])
+                {
                     DFS(neighbor, dest, visited, pathStack);
                 }
             }
         }
 
         // Backtrack
-        visited[src - 'A'] = false;
+        visited[src] = false;
         pathStack.pop();
     }
 
-    void recursiveBFS(char src, int k, unordered_map<char, int>& distance, queue<char>& q, unordered_set<char>& visited) {
-        if (q.empty()) {
+    void recursiveBFS(char src, int k, unordered_map<char, int> &distance, queue<char> &q, unordered_set<char> &visited)
+    {
+        if (q.empty())
+        {
             return;
         }
 
         char current_node = q.front();
         q.pop();
 
-        for (const auto& neighbor : adjacencyListBFS[current_node - 'A']) {
+        for (const auto &neighbor : adjacencyListBFS[current_node])
+        {
             char next_node = neighbor.first;
             int weight = neighbor.second;
 
-            if (!visited.count(next_node)) {
+            if (!visited.count(next_node))
+            {
                 visited.insert(next_node);
                 distance[next_node] = distance[current_node] + weight;
 
-                if (distance[next_node] <= k) {
+                if (distance[next_node] <= k)
+                {
                     cout << next_node << " ";
                 }
 
@@ -76,15 +98,17 @@ public:
         recursiveBFS(src, k, distance, q, visited);
     }
 
-    void printAllPaths(char src, char dest) {
-        vector<bool> visited(vertices, false);
+    void printAllPaths(char src, char dest)
+    {
+        unordered_map<char, bool> visited;
         stack<char> pathStack;
 
         cout << "All paths from " << src << " to " << dest << " are:\n";
         DFS(src, dest, visited, pathStack);
     }
 
-    void printNodesAtDistance(char src, int k) {
+    void printNodesAtDistance(char src, int k)
+    {
         unordered_map<char, int> distance;
         queue<char> q;
         unordered_set<char> visited;
@@ -92,13 +116,14 @@ public:
         q.push(src);
         visited.insert(src);
 
-        cout << "Users from "<< src << " in a range of " << k<< " are: "<<endl;
+        cout << "Users from " << src << " in a range of " << k << " are: " << endl;
         recursiveBFS(src, k, distance, q, visited);
         cout << endl;
     }
 };
 
-int main() {
+int main()
+{
     // Create a graph
     Graph graph(26); // Assuming only uppercase alphabets are used
     graph.addEdgeDFS('A', 'B');
@@ -120,19 +145,29 @@ int main() {
     int k = 2;
 
     int choice;
-    cout << "Choose operation:\n1. DFS - Print all paths\n2. BFS - Print nodes at distance\n3. Exit";
-    cin >> choice;
 
-    switch(choice) {
+    bool exit = true;
+    while (exit)
+    {
+        cout << "------------------------------------" << endl;
+        cout << "Choose operation:\n1. DFS - Print all paths\n2. BFS - Print nodes at distance\n3. Exit\n";
+        cout << "Enter your choice : ";
+        cin >> choice;
+        
+        switch (choice)
+        {
         case 1:
             graph.printAllPaths(source, destination);
             break;
         case 2:
             graph.printNodesAtDistance(source, k);
             break;
-        case 3: break;
-        default:
-            cout << "Invalid choice\n";
+        case 3:
+            cout << "Exiting..." << endl;
+            cout << "------------------------------------" << endl;
+            exit = false;
+            break;
+        }
     }
 
     return 0;
